@@ -12,8 +12,6 @@ static void process(uint32_t sample_rate, uint32_t n_frames, float* buffer, void
 	float target_gain = input->pen_pressure;
 	float target_x = input->pen_y;
 
-	const float adv = (state->hz / (float)sample_rate) * OIM_PI2;
-
 	for (int i = 0; i < n_frames; i++) {
 		float signal0 = sinf(state->phase);
 		float signal1 = (state->phase - OIM_PI) / OIM_PI;
@@ -22,7 +20,7 @@ static void process(uint32_t sample_rate, uint32_t n_frames, float* buffer, void
 
 		for (int j = 0; j < OIM_N_CHANNELS; j++) buffer[i*OIM_N_CHANNELS+j] = signal;
 
-		state->phase += adv;
+		state->phase += (state->hz / (float)sample_rate) * OIM_PI2;
 		while (state->phase > OIM_PI2) state->phase -= OIM_PI2;
 		state->hz += (target_hz - state->hz) * 0.0001f;
 		state->gain += (target_gain - state->gain) * 0.0001f;
