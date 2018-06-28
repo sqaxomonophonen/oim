@@ -1,0 +1,3 @@
+ATTRS{name}=="Wacom Bamboo 16FG 4x5 Pen", SYMLINK+="tablet_pen", MODE="666"
+ATTRS{name}=="Wacom Bamboo 16FG 4x5 Finger", SYMLINK+="tablet_touch", MODE="666"
+ATTRS{name}=="Wacom Bamboo 16FG 4x5 Pad", SYMLINK+="tablet_padbtns", MODE="666"
