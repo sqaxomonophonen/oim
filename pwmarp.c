@@ -45,23 +45,27 @@ static void process(uint32_t sample_rate, uint32_t n_frames, float* buffer, void
 
 
 	for (int i = 0; i < n_frames; i++) {
-		float signal = (state->phase < state->dutycycle) ? state->gain : -state->gain;
+		if (state->n_notes > 0) {
+			float signal = (state->phase < state->dutycycle) ? state->gain : -state->gain;
 
-		for (int j = 0; j < OIM_N_CHANNELS; j++) buffer[i*OIM_N_CHANNELS+j] = signal;
+			for (int j = 0; j < OIM_N_CHANNELS; j++) buffer[i*OIM_N_CHANNELS+j] = signal;
 
-		const float arp_adv = state->arp_hz / (float)sample_rate;
-		state->arp_phase += arp_adv;
-		int arp_index = (int)state->arp_phase;
-		if (arp_index >= state->n_notes) {
-			state->arp_phase -= (float)arp_index;
-			arp_index = 0;
+			const float arp_adv = state->arp_hz / (float)sample_rate;
+			state->arp_phase += arp_adv;
+			int arp_index = (int)state->arp_phase;
+			if (arp_index >= state->n_notes) {
+				state->arp_phase -= (float)arp_index;
+				arp_index = 0;
+			}
+			uint8_t note = state->notes[arp_index];
+			float hz = 440.0f * powf(2.0f, (float)(note - 69) / 12.0f);
+
+			state->phase += (hz / (float)sample_rate) * 2.0f;
+			while (state->phase > 1.0f) state->phase -= 2.0f;
+
+		} else {
+			for (int j = 0; j < OIM_N_CHANNELS; j++) buffer[i*OIM_N_CHANNELS+j] = 0;
 		}
-		uint8_t note = state->notes[arp_index];
-		float hz = 440.0f * powf(2.0f, (float)(note - 69) / 12.0f);
-
-		const float adv = (hz / (float)sample_rate) * 2.0f;
-		state->phase += adv;
-		while (state->phase > 1.0f) state->phase -= 2.0f;
 
 		state->arp_hz += (target_arp_hz - state->arp_hz) * 0.0001f;
 		state->gain += (target_gain - state->gain) * 0.0001f;
